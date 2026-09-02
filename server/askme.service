@@ -1,0 +1,15 @@
+[Unit]
+Description=askme - two-person private Q&A server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/askme
+ExecStart=/usr/bin/python3 /home/ubuntu/askme/server.py serve
+Restart=always
+RestartSec=3
+# 数据在 /home/ubuntu/askme/data(SQLite + 附件),备份整个目录即可
+
+[Install]
+WantedBy=multi-user.target
