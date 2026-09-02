@@ -75,6 +75,8 @@ def main():
                    help="ssh host alias of the server running askmate (required unless --local)")
     p.add_argument("--remote-user", default=os.environ.get("ASKME_PUBLISH_USER"),
                    help="ssh user (default: your current user)")
+    p.add_argument("--remote-dir", default=os.environ.get("ASKME_PUBLISH_DIR", "~/askmate/dist"),
+                   help="remote dist directory (default ~/askmate/dist, matching server/deploy.sh)")
     p.add_argument("--local", action="store_true", help="build dist/ only, no upload")
     args = p.parse_args()
 
@@ -91,9 +93,10 @@ def main():
 
     if not args.local:
         target = "%s@%s" % (args.remote_user, args.host) if args.remote_user else args.host
-        subprocess.run(["ssh", target, "mkdir -p ~/askmate/dist"], check=True)
-        subprocess.run(["scp", "-q"] + made + ["%s:~/askmate/dist/" % target], check=True)
-        print("✓ uploaded to %s:~/askmate/dist/" % target)
+        rdir = args.remote_dir
+        subprocess.run(["ssh", target, "mkdir -p %s" % rdir], check=True)
+        subprocess.run(["scp", "-q"] + made + ["%s:%s/" % (target, rdir)], check=True)
+        print("✓ uploaded to %s:%s" % (target, rdir))
         r = subprocess.run(["ssh", target,
                             "curl -s 'http://127.0.0.1:8730/api/cli/version?skill=ask-partner'"],
                            capture_output=True, text=True)

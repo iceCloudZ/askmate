@@ -28,7 +28,7 @@ import uuid
 DEFAULT_SERVER = "http://127.0.0.1:8730"
 CONFIG_PATH = os.environ.get("ASKME_CONFIG") or os.path.join(
     os.path.expanduser("~"), ".askme", "config.json")
-CLI_VERSION = "1.3.0"
+CLI_VERSION = "1.3.1"
 WEB_HOME_URL = DEFAULT_SERVER  # toast 点击打开服务状态页
 UPGRADE_SKILLS = ("ask-partner", "answer-partner")  # 打包了本 CLI 的 skill,检测时取版本最高者
 UPGRADE_CHECK_INTERVAL = 24 * 3600  # 自动检测最小间隔(秒)
@@ -272,12 +272,24 @@ def _upgrade_skills(cfg):
     return list(UPGRADE_SKILLS)
 
 
-def fetch_latest_skill(cfg, timeout=8):
+def _local_skill_name():
+    """Read `name` from the SKILL.md sitting next to me — the upgrade channel should
+    prefer THIS skill's zip (the two skills ship different SKILL.md copies)."""
+    md = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SKILL.md")
+    try:
+        with open(md, "r", encoding="utf-8") as f:
+            m = re.search(r"^name:\s*([a-z0-9-]+)\s*$", f.read(), re.M)
+        return m.group(1) if m else None
+    except OSError:
+        return None
+
+
+def fetch_latest_skill(cfg, timeout=8, skills=None):
     """查各 skill 的最新版本,返回 (版本元组, 版本串, skill名);全部失败返回 None。
     /api/cli/* 免鉴权,直连不走 api()(未登录也能升级)。"""
     server = server_of(cfg)
     best = None
-    for name in _upgrade_skills(cfg):
+    for name in (skills if skills is not None else _upgrade_skills(cfg)):
         try:
             resp = http_json(server, "GET", f"/api/cli/version?skill={name}", timeout=timeout)
         except ApiError:
@@ -398,8 +410,10 @@ def maybe_auto_upgrade(args):
         return
     cfg["last_upgrade_check"] = now
     save_config(cfg)
+    local_name = _local_skill_name()
+    names = [local_name] if local_name and local_name in _upgrade_skills(cfg) else None
     try:
-        latest = fetch_latest_skill(cfg, timeout=5)
+        latest = fetch_latest_skill(cfg, timeout=5, skills=names)
     except Exception:
         return
     if not latest:
@@ -562,7 +576,9 @@ def cmd_upgrade(args):
     local = _version_tuple(CLI_VERSION)
     baseline = max(local, _version_tuple(cfg.get("upgrade_seen_version")))
     print(f"当前版本: v{CLI_VERSION}" + (f" (已确认至 v{'.'.join(map(str, baseline))})" if baseline > local else ""))
-    latest = fetch_latest_skill(cfg)
+    local_name = _local_skill_name()
+    names = [local_name] if local_name and local_name in _upgrade_skills(cfg) else None
+    latest = fetch_latest_skill(cfg, skills=names)
     if not latest:
         err("查询服务器版本失败(未发布/网络),请稍后再试")
         return 1
