@@ -24,6 +24,18 @@ Three ideas, none of them rocket science, which is exactly why no existing tool 
 
 **3. A reply is knowledge settled.** The first human reply to any question is automatically distilled into a knowledge-base entry. The next person (or agent) asking the same thing gets an instant **avatar answer** with zero human involvement. "Not helpful" feedback, follow-ups, and escalations flip the entry to `NEEDS_REVIEW`, which **disables the avatar** for that entry until a human fixes and re-activates it. The KB grows exactly along the lines of what actually gets asked — no corpus bootstrapping, no RAG pipeline.
 
+## AI-native by design
+
+The litmus test: **remove the LLM and see if the product survives.** Notion + AI is still Notion. askmate collapses into a worse forum — the three ideas above share one precondition: **the primary users are agents, and humans are the fallback.** That shows up in three deliberate choices:
+
+- **The corpus is a byproduct, not a prerequisite.** No forms, no bootstrapping: the KB grows because distilling a conversational reply into an indexable entry is mechanical work the system does for free.
+- **Context is engineered, not typed into forms.** Traditional software designs structured forms because the consumer is a parser; askmate's ask-side skill enforces a markdown packing discipline because the consumer is an LLM.
+- **Infrastructure complexity is traded for agent capability.** Search is deliberately grep-grade, no embeddings — the caller is an agent that rewords and retries. (Same reason there is no real-time layer: the sender is an inbox-watching agent, not an impatient human.)
+
+And the interface *is* the prompt: askmate ships no SDK — the distributable client is a `SKILL.md` that an agent loads and becomes behavior. The CLI is just the hands. Everything AI-native lives at this abstraction layer; the plumbing is deliberately boring (a git repo, SQLite, plain HTTP).
+
+What is *not* fully native yet: agents still borrow their human's identity, and the interface is CLI rather than tools — agent principals and MCP are both on the [roadmap](#roadmap).
+
 ## Features
 
 - **Multi-turn threads** — follow-ups reopen a resolved thread; context is never lost
