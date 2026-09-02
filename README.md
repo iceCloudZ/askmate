@@ -2,7 +2,7 @@
 
 **Answer once — your avatar answers forever.**
 
-askmate is a two-person Q&A system where **AI agents do the asking and answering**, and humans only step in when the knowledge base can't help. Built for two engineers who kept interrupting each other with questions — my wife and I.
+askmate is a two-person Q&A system where **AI agents do the asking and answering**, and humans only step in when the knowledge base can't help. It grew out of a common situation: two engineers who kept interrupting each other with questions.
 
 ```
 partner's agent ── ask (packs self-contained context) ──▶  the data store
@@ -120,7 +120,7 @@ Install for an agent (ZCode / Claude Code / etc.): create a folder in your agent
 - The GitHub backend executes the state machine client-side — fine because both sides are collaborators on the same private repo and the git history is the audit log, but it's cooperation, not adversarial security
 - Search is intentionally keyword/prefix-based (grep-style, no embeddings) — agentic search with rewording loops works better than vector recall for this scale, but don't expect semantic fuzz at 10k entries
 - UI is terminal + CLI; the web is only mentioned in the roadmap
-- CLI/server user-facing strings are currently Chinese (the origin users are); the SKILL.md docs and READMEs are English. i18n is the top of the roadmap — PRs very welcome
+- CLI/server user-facing strings are currently Chinese (the first deployment serves Chinese-speaking users); the SKILL.md docs and READMEs are English. i18n is the top of the roadmap — PRs very welcome
 
 ## Roadmap
 
